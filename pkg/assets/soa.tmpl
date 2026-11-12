@@ -1,0 +1,40 @@
+type {{ .StructName }}Soa struct {
+{{- range .Fields }}
+	{{ .Name }} []{{ .Type }} {{ .Tags }}
+{{- end }}
+}
+
+func (v *{{ .StructName }}Soa) Allocate(n int) {
+{{- range .Fields }}
+	v.{{ .Name }} = make([]{{ .Type }}, n)
+{{- end }}
+}
+
+func (v *{{ .StructName }}Soa) Columns() []pkg.Column {
+	return []pkg.Column{
+	{{- range .Fields }}
+		{Name: "{{ .Name }}", Tags: {{ .Tags }}, Ptr: &v.{{ .Name }}},
+	{{- end }}
+	}
+}
+
+func (v *{{ .StructName }}Soa) Cap() int {
+	return min(
+	{{- range .Fields }}
+		len(v.{{ .Name }}),
+	{{- end }}
+	)
+}
+
+func (v *{{ .StructName }}Soa) ToAos() []{{ .StructName }} {
+	result := make([]{{ .StructName }}, 0, v.Cap())
+	for i := range v.Cap() {
+		item := {{ .StructName }}{
+		{{- range .Fields }}
+			{{ .Name }}: v.{{ .Name }}[i],
+		{{- end }}
+		}
+		result = append(result, item)
+	}
+	return result
+}
