@@ -4,6 +4,7 @@ package parquet
 
 import (
 	"github.com/davidkleiven/colio/pkg"
+	"iter"
 	"time"
 )
 
@@ -47,20 +48,22 @@ func (v *PersonSoa) Cap() int {
 	)
 }
 
-func (v *PersonSoa) ToAos() []Person {
-	result := make([]Person, 0, v.Cap())
-	for i := range v.Cap() {
-		item := Person{
-			Name:        v.Name[i],
-			Age:         v.Age[i],
-			NumChildren: v.NumChildren[i],
-			Height:      v.Height[i],
-			Weight:      v.Weight[i],
-			CreatedAt:   v.CreatedAt[i],
+func (v *PersonSoa) ToAos() iter.Seq[Person] {
+	return func(yield func(Person) bool) {
+		for i := range v.Cap() {
+			item := Person{
+				Name:        v.Name[i],
+				Age:         v.Age[i],
+				NumChildren: v.NumChildren[i],
+				Height:      v.Height[i],
+				Weight:      v.Weight[i],
+				CreatedAt:   v.CreatedAt[i],
+			}
+			if !yield(item) {
+				return
+			}
 		}
-		result = append(result, item)
 	}
-	return result
 }
 
 func (v *PersonSoa) Delete(i int) {

@@ -3,6 +3,7 @@ package parquet
 import (
 	"bytes"
 	"io"
+	"slices"
 	"testing"
 	"time"
 
@@ -63,7 +64,7 @@ func TestReadAllInBatches(t *testing.T) {
 			result.Allocate(1)
 			err = reader.Read(func(batch *PersonSoa, _ int) error {
 				count++
-				got = append(got, batch.ToAos()...)
+				got = append(got, slices.Collect(batch.ToAos())...)
 				return nil
 			})
 			require.ErrorIs(t, err, io.EOF)
@@ -78,8 +79,7 @@ func TestReadAllInBatches(t *testing.T) {
 				Read(func(_ *PersonSoa, _ int) error { count++; return nil })
 			require.ErrorIs(t, err, io.EOF)
 			require.Equal(t, 1, count)
-			require.Equal(t, data, big.ToAos()[:2])
-
+			require.Equal(t, data, slices.Collect(big.ToAos())[:2])
 		})
 	}
 
@@ -141,7 +141,7 @@ func TestDelete(t *testing.T) {
 	soa.Name[1] = "Susan"
 	soa.Delete(0)
 
-	persons := soa.ToAos()
+	persons := slices.Collect(soa.ToAos())
 	require.Len(t, persons, 1)
 	require.Equal(t, persons[0].Name, "Susan")
 }

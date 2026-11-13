@@ -26,17 +26,19 @@ func (v *{{ .StructName }}Soa) Cap() int {
 	)
 }
 
-func (v *{{ .StructName }}Soa) ToAos() []{{ .StructName }} {
-	result := make([]{{ .StructName }}, 0, v.Cap())
-	for i := range v.Cap() {
-		item := {{ .StructName }}{
-		{{- range .Fields }}
-			{{ .Name }}: v.{{ .Name }}[i],
-		{{- end }}
+func (v *{{ .StructName }}Soa) ToAos() iter.Seq[{{ .StructName }}] {
+	return func(yield func({{ .StructName }}) bool) {
+		for i := range v.Cap() {
+			item := {{ .StructName }}{
+			{{- range .Fields }}
+				{{ .Name }}: v.{{ .Name }}[i],
+			{{- end }}
+			}
+		if !yield(item) {
+			return
 		}
-		result = append(result, item)
 	}
-	return result
+	}
 }
 
 func (v *{{ .StructName }}Soa) Delete(i int) {

@@ -50,6 +50,7 @@ func main() {
 			buf.WriteString("\nimport (\n")
 			buf.WriteString("\"github.com/davidkleiven/colio/pkg\"\n")
 			buf.WriteString("\"time\"\n") // Should be removed by formatter if not necessary
+			buf.WriteString("\"iter\"\n")
 			buf.WriteString(")\n")
 			buf.WriteString("\n\n")
 		}
