@@ -14,8 +14,16 @@ type Column struct {
 }
 
 func (c *Column) ParquetName() string {
+	return tagged(c, "parquet")
+}
+
+func (c *Column) ClickHouseName() string {
+	return tagged(c, "ch")
+}
+
+func tagged(c *Column, key string) string {
 	tag := reflect.StructTag(c.Tags)
-	if v := tag.Get("parquet"); v != "" {
+	if v := tag.Get(key); v != "" {
 		return v
 	}
 	return c.Name
