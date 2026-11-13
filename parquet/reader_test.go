@@ -111,3 +111,15 @@ func BenchmarkAosVsSoa(b *testing.B) {
 		}
 	})
 }
+
+func TestDelete(t *testing.T) {
+	soa := PersonSoa{}
+	soa.Allocate(2)
+	soa.Name[0] = "John"
+	soa.Name[1] = "Susan"
+	soa.Delete(0)
+
+	persons := soa.ToAos()
+	require.Len(t, persons, 1)
+	require.Equal(t, persons[0].Name, "Susan")
+}

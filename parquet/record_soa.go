@@ -54,3 +54,16 @@ func (v *PersonSoa) ToAos() []Person {
 	}
 	return result
 }
+
+func (v *PersonSoa) Delete(i int) {
+	v.Name[i] = v.Name[len(v.Name)-1]
+	v.Name = v.Name[:len(v.Name)-1]
+	v.Age[i] = v.Age[len(v.Age)-1]
+	v.Age = v.Age[:len(v.Age)-1]
+	v.NumChildren[i] = v.NumChildren[len(v.NumChildren)-1]
+	v.NumChildren = v.NumChildren[:len(v.NumChildren)-1]
+	v.Height[i] = v.Height[len(v.Height)-1]
+	v.Height = v.Height[:len(v.Height)-1]
+	v.Weight[i] = v.Weight[len(v.Weight)-1]
+	v.Weight = v.Weight[:len(v.Weight)-1]
+}

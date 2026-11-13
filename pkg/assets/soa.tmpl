@@ -38,3 +38,10 @@ func (v *{{ .StructName }}Soa) ToAos() []{{ .StructName }} {
 	}
 	return result
 }
+
+func (v *{{ .StructName }}Soa) Delete(i int) {
+	{{- range .Fields }}
+		v.{{ .Name }}[i] = v.{{ .Name }}[len(v.{{ .Name }}) - 1]
+		v.{{ .Name }} = v.{{ .Name }}[:len(v.{{ .Name }}) - 1]
+	{{- end }}
+}
