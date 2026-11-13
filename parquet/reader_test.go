@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"testing"
+	"time"
 
 	parquetgo "github.com/parquet-go/parquet-go"
 	"github.com/stretchr/testify/require"
@@ -17,6 +18,7 @@ func TestReadAllInBatches(t *testing.T) {
 			NumChildren: 2,
 			Height:      180.0,
 			Weight:      82.0,
+			CreatedAt:   time.Now().UTC(),
 		},
 		{
 			Name:        "Susan",
@@ -24,6 +26,7 @@ func TestReadAllInBatches(t *testing.T) {
 			NumChildren: 1,
 			Height:      168.0,
 			Weight:      68.0,
+			CreatedAt:   time.Now().UTC(),
 		},
 	}
 
@@ -76,6 +79,7 @@ func BenchmarkAosVsSoa(b *testing.B) {
 			NumChildren: int32(i % 4),
 			Height:      float64(i % 210),
 			Weight:      float32(i % 120),
+			CreatedAt:   time.Now().UTC(),
 		}
 	}
 
