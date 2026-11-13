@@ -3,6 +3,8 @@ package parquet
 import (
 	"fmt"
 	"io"
+	"strings"
+	"time"
 
 	parquetgo "github.com/parquet-go/parquet-go"
 )
@@ -77,31 +79,7 @@ func newDecoder(chunk parquetgo.ColumnChunk, dst any) (ColumnDecoder, error) {
 		), nil
 
 	case parquetgo.Int64:
-		if i64dst, ok := dst.(*[]int64); ok {
-			return newTypedDecoder(
-				chunk, i64dst,
-				func(p parquetgo.Page) ValueReader[int64] {
-					r := p.Values().(parquetgo.Int64Reader)
-					return r.ReadInt64s
-				},
-			), nil
-		}
-		return newTypedDecoder(
-			chunk, dst.(*[]int),
-			func(p parquetgo.Page) ValueReader[int] {
-				r := p.Values().(parquetgo.Int64Reader)
-				values := make([]int64, p.NumValues())
-				return func(dst []int) (int, error) {
-					buf := values[:min(len(values), len(dst))]
-					n, err := r.ReadInt64s(buf)
-					for i := range n {
-						dst[i] = int(values[i])
-					}
-					return n, err
-				}
-			},
-		), nil
-
+		return newInt64Decoder(chunk, dst)
 	case parquetgo.Float:
 		return newTypedDecoder(
 			chunk, dst.(*[]float32),
@@ -141,4 +119,62 @@ func newDecoder(chunk parquetgo.ColumnChunk, dst any) (ColumnDecoder, error) {
 	}
 
 	return nil, fmt.Errorf("unsupported physical type: %s", chunk.Type())
+}
+
+func newInt64Decoder(chunk parquetgo.ColumnChunk, dst any) (ColumnDecoder, error) {
+	switch typedDst := dst.(type) {
+	case *[]int64:
+		return newTypedDecoder(
+			chunk, typedDst,
+			func(p parquetgo.Page) ValueReader[int64] {
+				r := p.Values().(parquetgo.Int64Reader)
+				return r.ReadInt64s
+			},
+		), nil
+	case *[]int:
+		return newTypedDecoder(
+			chunk, typedDst,
+			func(p parquetgo.Page) ValueReader[int] {
+				r := p.Values().(parquetgo.Int64Reader)
+				values := make([]int64, p.NumValues())
+				return func(dst []int) (int, error) {
+					buf := values[:min(len(values), len(dst))]
+					n, err := r.ReadInt64s(buf)
+					for i := range n {
+						dst[i] = int(values[i])
+					}
+					return n, err
+				}
+			},
+		), nil
+	case *[]time.Time:
+		return newTypedDecoder(
+			chunk, typedDst,
+			func(p parquetgo.Page) ValueReader[time.Time] {
+				r := p.Values().(parquetgo.Int64Reader)
+				values := make([]int64, p.NumValues())
+				t := chunk.Type()
+				logicalType := t.LogicalType().String()
+				var convert func(int64) time.Time
+				switch {
+				case strings.Contains(logicalType, parquetgo.Millisecond.TimeUnit().Value.String()):
+					convert = func(v int64) time.Time { return time.UnixMilli(v).UTC() }
+				case strings.Contains(logicalType, parquetgo.Nanosecond.TimeUnit().Value.String()):
+					convert = func(v int64) time.Time { return time.Unix(0, v).UTC() }
+				default:
+					convert = func(v int64) time.Time { return time.UnixMicro(v).UTC() }
+				}
+				return func(dst []time.Time) (int, error) {
+					buf := values[:min(len(values), len(dst))]
+					n, err := r.ReadInt64s(buf)
+					for i := range n {
+						dst[i] = convert(values[i])
+					}
+					return n, err
+				}
+			},
+		), nil
+	default:
+		return nil, fmt.Errorf("Unsupported type %T", typedDst)
+	}
 }

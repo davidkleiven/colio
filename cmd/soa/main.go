@@ -47,7 +47,10 @@ func main() {
 			buf.WriteString("// Generated code by coliosoa. DO NOT EDIT\n\n")
 			buf.WriteString("package ")
 			buf.WriteString(pkgName)
-			buf.WriteString("\nimport \"github.com/davidkleiven/colio/pkg\"")
+			buf.WriteString("\nimport (\n")
+			buf.WriteString("\"github.com/davidkleiven/colio/pkg\"\n")
+			buf.WriteString("\"time\"\n") // Should be removed by formatter if not necessary
+			buf.WriteString(")\n")
 			buf.WriteString("\n\n")
 		}
 

@@ -2,14 +2,18 @@
 
 package parquet
 
-import "github.com/davidkleiven/colio/pkg"
+import (
+	"github.com/davidkleiven/colio/pkg"
+	"time"
+)
 
 type PersonSoa struct {
-	Name        []string  `parquet:"name"`
-	Age         []int     `parquet:"age"`
-	NumChildren []int32   `parquet:"numChildren"`
-	Height      []float64 `parquet:"height"`
-	Weight      []float32 `parquet:"weight"`
+	Name        []string    `parquet:"name"`
+	Age         []int       `parquet:"age"`
+	NumChildren []int32     `parquet:"numChildren"`
+	Height      []float64   `parquet:"height"`
+	Weight      []float32   `parquet:"weight"`
+	CreatedAt   []time.Time `parquet:"createdAt"`
 }
 
 func (v *PersonSoa) Allocate(n int) {
@@ -18,6 +22,7 @@ func (v *PersonSoa) Allocate(n int) {
 	v.NumChildren = make([]int32, n)
 	v.Height = make([]float64, n)
 	v.Weight = make([]float32, n)
+	v.CreatedAt = make([]time.Time, n)
 }
 
 func (v *PersonSoa) Columns() []pkg.Column {
@@ -27,6 +32,7 @@ func (v *PersonSoa) Columns() []pkg.Column {
 		{Name: "NumChildren", Tags: `parquet:"numChildren"`, Ptr: &v.NumChildren},
 		{Name: "Height", Tags: `parquet:"height"`, Ptr: &v.Height},
 		{Name: "Weight", Tags: `parquet:"weight"`, Ptr: &v.Weight},
+		{Name: "CreatedAt", Tags: `parquet:"createdAt"`, Ptr: &v.CreatedAt},
 	}
 }
 
@@ -37,6 +43,7 @@ func (v *PersonSoa) Cap() int {
 		len(v.NumChildren),
 		len(v.Height),
 		len(v.Weight),
+		len(v.CreatedAt),
 	)
 }
 
@@ -49,6 +56,7 @@ func (v *PersonSoa) ToAos() []Person {
 			NumChildren: v.NumChildren[i],
 			Height:      v.Height[i],
 			Weight:      v.Weight[i],
+			CreatedAt:   v.CreatedAt[i],
 		}
 		result = append(result, item)
 	}
@@ -66,4 +74,6 @@ func (v *PersonSoa) Delete(i int) {
 	v.Height = v.Height[:len(v.Height)-1]
 	v.Weight[i] = v.Weight[len(v.Weight)-1]
 	v.Weight = v.Weight[:len(v.Weight)-1]
+	v.CreatedAt[i] = v.CreatedAt[len(v.CreatedAt)-1]
+	v.CreatedAt = v.CreatedAt[:len(v.CreatedAt)-1]
 }
