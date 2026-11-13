@@ -63,3 +63,51 @@ func TestReadAllInBatches(t *testing.T) {
 	require.Equal(t, 1, count)
 	require.Equal(t, data, big.ToAos()[:2])
 }
+
+func BenchmarkAosVsSoa(b *testing.B) {
+	num := 2_000_000
+
+	rows := make([]Person, num)
+	names := []string{"John", "Axel", "Susan"}
+	for i := range rows {
+		rows[i] = Person{
+			Name:        names[i%len(names)],
+			Age:         i % 120,
+			NumChildren: int32(i % 4),
+			Height:      float64(i % 210),
+			Weight:      float32(i % 120),
+		}
+	}
+
+	var buf bytes.Buffer
+	pw := parquetgo.NewGenericWriter[Person](&buf)
+	n, err := pw.Write(rows)
+	if err != nil {
+		b.Fatal(err)
+	}
+	if n != num {
+		b.Fatalf("Expected %d rows written, wrote %d", num, n)
+	}
+	pw.Close()
+
+	soaResult := PersonSoa{}
+	soaResult.Allocate(num)
+
+	b.Run("soa read", func(b *testing.B) {
+		for range b.N {
+			err := NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len())).Bind(&soaResult).Read[*PersonSoa](nil)
+			if err != io.EOF {
+				b.Fatal(err)
+			}
+		}
+	})
+
+	b.Run("aos read", func(b *testing.B) {
+		for range b.N {
+			_, err := parquetgo.Read[Person](bytes.NewReader(buf.Bytes()), int64(buf.Len()))
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
