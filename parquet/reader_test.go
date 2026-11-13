@@ -7,6 +7,7 @@ import (
 	"time"
 
 	parquetgo "github.com/parquet-go/parquet-go"
+	"github.com/parquet-go/parquet-go/compress/zstd"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,41 +31,58 @@ func TestReadAllInBatches(t *testing.T) {
 		},
 	}
 
-	var buf bytes.Buffer
-	pr := parquetgo.NewGenericWriter[Person](&buf)
-	n, err := pr.Write(data)
-	require.NoError(t, err)
-	require.Equal(t, n, 2)
-	pr.Close()
+	for _, test := range []struct {
+		Name string
+		Opts []parquetgo.WriterOption
+	}{
+		{
+			Name: "none",
+		},
+		{
+			Name: "zstd",
+			Opts: []parquetgo.WriterOption{parquetgo.Compression(&zstd.Codec{})},
+		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			var buf bytes.Buffer
+			pr := parquetgo.NewGenericWriter[Person](&buf, test.Opts...)
+			n, err := pr.Write(data)
+			require.NoError(t, err)
+			require.Equal(t, n, 2)
+			pr.Close()
 
-	// Read as columns
-	var result PersonSoa
-	reader := NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len())).Bind(&result)
-	err = reader.Read[*PersonSoa](nil)
-	require.ErrorIs(t, err, io.EOF)
-	require.Equal(t, 0, result.Cap())
+			// Read as columns
+			var result PersonSoa
+			reader := NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len())).Bind(&result)
+			err = reader.Read[*PersonSoa](nil)
+			require.ErrorIs(t, err, io.EOF)
+			require.Equal(t, 0, result.Cap())
 
-	count := 0
-	var got []Person
-	result.Allocate(1)
-	err = reader.Read(func(batch *PersonSoa, _ int) error {
-		count++
-		got = append(got, batch.ToAos()...)
-		return nil
-	})
-	require.ErrorIs(t, err, io.EOF)
-	require.Equal(t, 2, count)
-	require.Equal(t, data, got)
+			count := 0
+			var got []Person
+			result.Allocate(1)
+			err = reader.Read(func(batch *PersonSoa, _ int) error {
+				count++
+				got = append(got, batch.ToAos()...)
+				return nil
+			})
+			require.ErrorIs(t, err, io.EOF)
+			require.Equal(t, 2, count)
+			require.Equal(t, data, got)
 
-	// When batch size is larger than the file, process is called once
-	count = 0
-	var big PersonSoa
-	big.Allocate(10)
-	err = NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len())).Bind(&big).
-		Read(func(_ *PersonSoa, _ int) error { count++; return nil })
-	require.ErrorIs(t, err, io.EOF)
-	require.Equal(t, 1, count)
-	require.Equal(t, data, big.ToAos()[:2])
+			// When batch size is larger than the file, process is called once
+			count = 0
+			var big PersonSoa
+			big.Allocate(10)
+			err = NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len())).Bind(&big).
+				Read(func(_ *PersonSoa, _ int) error { count++; return nil })
+			require.ErrorIs(t, err, io.EOF)
+			require.Equal(t, 1, count)
+			require.Equal(t, data, big.ToAos()[:2])
+
+		})
+	}
+
 }
 
 func BenchmarkAosVsSoa(b *testing.B) {
