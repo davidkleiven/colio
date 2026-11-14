@@ -80,3 +80,69 @@ func (v *PersonSoa) Delete(i int) {
 	v.CreatedAt[i] = v.CreatedAt[len(v.CreatedAt)-1]
 	v.CreatedAt = v.CreatedAt[:len(v.CreatedAt)-1]
 }
+
+type EventSoa struct {
+	Name  []string      `ch:"name"`
+	Tags  [][]int       `ch:"tags"`
+	Names [][]string    `ch:"names"`
+	Steps [][]float64   `ch:"steps"`
+	Times [][]time.Time `ch:"times"`
+}
+
+func (v *EventSoa) Allocate(n int) {
+	v.Name = make([]string, n)
+	v.Tags = make([][]int, n)
+	v.Names = make([][]string, n)
+	v.Steps = make([][]float64, n)
+	v.Times = make([][]time.Time, n)
+}
+
+func (v *EventSoa) Columns() []pkg.Column {
+	return []pkg.Column{
+		{Name: "Name", Tags: `ch:"name"`, Ptr: &v.Name},
+		{Name: "Tags", Tags: `ch:"tags"`, Ptr: &v.Tags},
+		{Name: "Names", Tags: `ch:"names"`, Ptr: &v.Names},
+		{Name: "Steps", Tags: `ch:"steps"`, Ptr: &v.Steps},
+		{Name: "Times", Tags: `ch:"times"`, Ptr: &v.Times},
+	}
+}
+
+func (v *EventSoa) Cap() int {
+	return min(
+		len(v.Name),
+		len(v.Tags),
+		len(v.Names),
+		len(v.Steps),
+		len(v.Times),
+	)
+}
+
+func (v *EventSoa) ToAos() iter.Seq[Event] {
+	return func(yield func(Event) bool) {
+		for i := range v.Cap() {
+			item := Event{
+				Name:  v.Name[i],
+				Tags:  v.Tags[i],
+				Names: v.Names[i],
+				Steps: v.Steps[i],
+				Times: v.Times[i],
+			}
+			if !yield(item) {
+				return
+			}
+		}
+	}
+}
+
+func (v *EventSoa) Delete(i int) {
+	v.Name[i] = v.Name[len(v.Name)-1]
+	v.Name = v.Name[:len(v.Name)-1]
+	v.Tags[i] = v.Tags[len(v.Tags)-1]
+	v.Tags = v.Tags[:len(v.Tags)-1]
+	v.Names[i] = v.Names[len(v.Names)-1]
+	v.Names = v.Names[:len(v.Names)-1]
+	v.Steps[i] = v.Steps[len(v.Steps)-1]
+	v.Steps = v.Steps[:len(v.Steps)-1]
+	v.Times[i] = v.Times[len(v.Times)-1]
+	v.Times = v.Times[:len(v.Times)-1]
+}

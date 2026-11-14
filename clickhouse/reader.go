@@ -121,6 +121,20 @@ func newStore(dst any) (func(proto.ColResult) error, error) {
 			}
 			return nil
 		}, nil
+	case *[][]string:
+		return copyLists(ptr), nil
+	case *[][]int32:
+		return copyLists(ptr), nil
+	case *[][]int64:
+		return copyLists(ptr), nil
+	case *[][]float32:
+		return copyLists(ptr), nil
+	case *[][]float64:
+		return copyLists(ptr), nil
+	case *[][]time.Time:
+		return copyLists(ptr), nil
+	case *[][]int:
+		return copyIntLists(ptr), nil
 	default:
 		return nil, fmt.Errorf("unsupported type %T", dst)
 	}
@@ -129,6 +143,54 @@ func newStore(dst any) (func(proto.ColResult) error, error) {
 type valueColumn[T any] interface {
 	Rows() int
 	Row(i int) T
+}
+
+// copyLists copies the rows of an Array(T) column into dst. The elements go
+// into the row slice already stored in dst, so row slices are reused from one
+// block to the next instead of being allocated per row.
+func copyLists[T any](dst *[][]T) func(proto.ColResult) error {
+	return func(col proto.ColResult) error {
+		values, ok := col.(*proto.ColArr[T])
+		if !ok {
+			return fmt.Errorf("cannot decode %s into %T", col.Type(), dst)
+		}
+		n := values.Rows()
+		*dst = resize(*dst, n)
+		for i := range n {
+			row := values.RowAppend(i, (*dst)[i][:0])
+			if row == nil {
+				row = []T{} // clickhouse has no nil arrays, match the parquet decoder
+			}
+			(*dst)[i] = row
+		}
+		return nil
+	}
+}
+
+// copyIntLists copies Array(Int64) into a column of Go ints. The int64 values
+// of each row go through a scratch buffer that is reused across rows.
+func copyIntLists(dst *[][]int) func(proto.ColResult) error {
+	return func(col proto.ColResult) error {
+		values, ok := col.(*proto.ColArr[int64])
+		if !ok {
+			return fmt.Errorf("cannot decode %s into %T", col.Type(), dst)
+		}
+		var scratch []int64
+		n := values.Rows()
+		*dst = resize(*dst, n)
+		for i := range n {
+			scratch = values.RowAppend(i, scratch[:0])
+			row := resize((*dst)[i], len(scratch))
+			for j := range scratch {
+				row[j] = int(scratch[j])
+			}
+			if row == nil {
+				row = []int{}
+			}
+			(*dst)[i] = row
+		}
+		return nil
+	}
 }
 
 func copyValues[T any](dst *[]T) func(proto.ColResult) error {
