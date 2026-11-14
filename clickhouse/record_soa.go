@@ -81,6 +81,19 @@ func (v *PersonSoa) Delete(i int) {
 	v.CreatedAt = v.CreatedAt[:len(v.CreatedAt)-1]
 }
 
+func (v *PersonSoa) FromAos(aos []Person) *PersonSoa {
+	v.Allocate(len(aos))
+	for i, item := range aos {
+		v.Name[i] = item.Name
+		v.Age[i] = item.Age
+		v.NumChildren[i] = item.NumChildren
+		v.Height[i] = item.Height
+		v.Weight[i] = item.Weight
+		v.CreatedAt[i] = item.CreatedAt
+	}
+	return v
+}
+
 type EventSoa struct {
 	Name  []string      `ch:"name"`
 	Tags  [][]int       `ch:"tags"`
@@ -145,4 +158,16 @@ func (v *EventSoa) Delete(i int) {
 	v.Steps = v.Steps[:len(v.Steps)-1]
 	v.Times[i] = v.Times[len(v.Times)-1]
 	v.Times = v.Times[:len(v.Times)-1]
+}
+
+func (v *EventSoa) FromAos(aos []Event) *EventSoa {
+	v.Allocate(len(aos))
+	for i, item := range aos {
+		v.Name[i] = item.Name
+		v.Tags[i] = item.Tags
+		v.Names[i] = item.Names
+		v.Steps[i] = item.Steps
+		v.Times[i] = item.Times
+	}
+	return v
 }

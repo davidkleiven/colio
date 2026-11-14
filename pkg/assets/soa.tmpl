@@ -47,3 +47,13 @@ func (v *{{ .StructName }}Soa) Delete(i int) {
 		v.{{ .Name }} = v.{{ .Name }}[:len(v.{{ .Name }}) - 1]
 	{{- end }}
 }
+
+func (v *{{ .StructName }}Soa) FromAos(aos []{{ .StructName }}) *{{ .StructName }}Soa {
+	v.Allocate(len(aos))
+	for i, item := range aos {
+		{{- range .Fields }}
+			v.{{ .Name }}[i] = item.{{ .Name }}	
+		{{- end }}
+	}
+	return v
+}
