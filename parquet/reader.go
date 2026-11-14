@@ -17,6 +17,18 @@ type columnBinding struct {
 	decoder      ColumnDecoder
 }
 
+// isColumnPath reports whether path is the leaf path of the flat column name.
+// Lists encoded with the standard three level layout have the leaf path
+// ["name", "list", "element"], lists encoded as a plain repeated field keep the
+// flat path.
+func isColumnPath(path []string, name string) bool {
+	if path[0] != name {
+		return false
+	}
+	return len(path) == 1 ||
+		(len(path) == 3 && path[1] == "list" && path[2] == "element")
+}
+
 func NewReader(r io.ReaderAt, size int64) *Reader {
 	reader := &Reader{}
 
@@ -50,20 +62,24 @@ func (r *Reader) Bind(dst pkg.Columnar) *Reader {
 		name := col.ParquetName()
 		found := false
 		for i, path := range r.schema.Columns() {
-			if len(path) == 1 && path[0] == name {
-				decoder, err := newDecoder(chunks[i], col.Ptr)
-				if err != nil {
-					r.Err = err
-					return r
-				}
-				r.columns = append(r.columns, columnBinding{parquetIndex: i, decoder: decoder})
-				found = true
-				break
+			if !isColumnPath(path, name) {
+				continue
 			}
 
-			if found {
-				break
+			leaf, ok := r.schema.Lookup(path...)
+			if !ok {
+				r.Err = fmt.Errorf("parquet column %q not found in schema", name)
+				return r
 			}
+
+			decoder, err := newDecoder(chunks[i], col.Ptr, leaf.MaxRepetitionLevel > 0)
+			if err != nil {
+				r.Err = err
+				return r
+			}
+			r.columns = append(r.columns, columnBinding{parquetIndex: i, decoder: decoder})
+			found = true
+			break
 		}
 
 		if !found {

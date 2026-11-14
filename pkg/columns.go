@@ -1,6 +1,9 @@
 package pkg
 
-import "reflect"
+import (
+	"reflect"
+	"strings"
+)
 
 type Columnar interface {
 	Columns() []Column
@@ -23,8 +26,11 @@ func (c *Column) ClickHouseName() string {
 
 func tagged(c *Column, key string) string {
 	tag := reflect.StructTag(c.Tags)
-	if v := tag.Get(key); v != "" {
-		return v
+	// Options may follow the column name, e.g. `parquet:"age,list"`, only the
+	// part before the first comma identifies the column.
+	name, _, _ := strings.Cut(tag.Get(key), ",")
+	if name == "" {
+		return c.Name
 	}
-	return c.Name
+	return name
 }

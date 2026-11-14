@@ -12,3 +12,10 @@ type Person struct {
 	Weight      float32   `parquet:"weight"`
 	CreatedAt   time.Time `parquet:"createdAt"`
 }
+
+type Event struct {
+	Name  string      `parquet:"name"`
+	Tags  []int       `parquet:"tags,list"`
+	Steps []float64   `parquet:"steps"`
+	Times []time.Time `parquet:"times,list"`
+}
