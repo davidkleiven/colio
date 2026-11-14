@@ -59,3 +59,13 @@ func (v *MeasurementSoa) Delete(i int) {
 	v.Value[i] = v.Value[len(v.Value)-1]
 	v.Value = v.Value[:len(v.Value)-1]
 }
+
+func (v *MeasurementSoa) FromAos(aos []Measurement) *MeasurementSoa {
+	v.Allocate(len(aos))
+	for i, item := range aos {
+		v.Id[i] = item.Id
+		v.Time[i] = item.Time
+		v.Value[i] = item.Value
+	}
+	return v
+}
