@@ -1,6 +1,7 @@
 package colio
 
 import (
+	"iter"
 	"reflect"
 	"strings"
 )
@@ -8,6 +9,10 @@ import (
 type Columnar interface {
 	Columns() []Column
 	Cap() int
+}
+
+type Aoser[T any] interface {
+	ToAos() iter.Seq[T]
 }
 
 type Column struct {

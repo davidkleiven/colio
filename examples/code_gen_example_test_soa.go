@@ -3,7 +3,7 @@
 package examples
 
 import (
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 	"iter"
 	"time"
 )
@@ -20,8 +20,8 @@ func (v *MeasurementSoa) Allocate(n int) {
 	v.Value = make([]float64, n)
 }
 
-func (v *MeasurementSoa) Columns() []pkg.Column {
-	return []pkg.Column{
+func (v *MeasurementSoa) Columns() []colio.Column {
+	return []colio.Column{
 		{Name: "Id", Tags: `parquet:"id"`, Ptr: &v.Id},
 		{Name: "Time", Tags: `parquet:"time"`, Ptr: &v.Time},
 		{Name: "Value", Tags: `parqiet:"value"`, Ptr: &v.Value},

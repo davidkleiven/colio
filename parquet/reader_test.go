@@ -275,3 +275,5 @@ func TestDelete(t *testing.T) {
 	require.Len(t, persons, 1)
 	require.Equal(t, persons[0].Name, "Susan")
 }
+
+var _ colio.Aoser[Person] = (*PersonSoa)(nil)
