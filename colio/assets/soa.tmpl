@@ -57,3 +57,11 @@ func (v *{{ .StructName }}Soa) FromAos(aos []{{ .StructName }}) *{{ .StructName 
 	}
 	return v
 }
+
+func (v *{{ .StructName }}Soa) At(i int) {{ .StructName }} {
+	return {{ .StructName }} {
+		{{- range .Fields }}
+			{{ .Name }}: v.{{ .Name }}[i],
+		{{- end }}
+	}
+}

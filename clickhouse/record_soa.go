@@ -94,6 +94,17 @@ func (v *PersonSoa) FromAos(aos []Person) *PersonSoa {
 	return v
 }
 
+func (v *PersonSoa) At(i int) Person {
+	return Person{
+		Name:        v.Name[i],
+		Age:         v.Age[i],
+		NumChildren: v.NumChildren[i],
+		Height:      v.Height[i],
+		Weight:      v.Weight[i],
+		CreatedAt:   v.CreatedAt[i],
+	}
+}
+
 type EventSoa struct {
 	Name  []string      `ch:"name"`
 	Tags  [][]int       `ch:"tags"`
@@ -170,4 +181,14 @@ func (v *EventSoa) FromAos(aos []Event) *EventSoa {
 		v.Times[i] = item.Times
 	}
 	return v
+}
+
+func (v *EventSoa) At(i int) Event {
+	return Event{
+		Name:  v.Name[i],
+		Tags:  v.Tags[i],
+		Names: v.Names[i],
+		Steps: v.Steps[i],
+		Times: v.Times[i],
+	}
 }
