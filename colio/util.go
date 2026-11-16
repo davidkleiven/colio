@@ -1,4 +1,4 @@
-package pkg
+package colio
 
 func Must[T any](v T, err error) T {
 	if err != nil {

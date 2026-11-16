@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 	parquetgo "github.com/parquet-go/parquet-go"
 	"github.com/parquet-go/parquet-go/compress/zstd"
 	"github.com/stretchr/testify/require"
@@ -176,8 +176,8 @@ type listOnScalarSoa struct {
 	Name [][]string
 }
 
-func (v *listOnScalarSoa) Columns() []pkg.Column {
-	return []pkg.Column{{Name: "Name", Tags: `parquet:"name"`, Ptr: &v.Name}}
+func (v *listOnScalarSoa) Columns() []colio.Column {
+	return []colio.Column{{Name: "Name", Tags: `parquet:"name"`, Ptr: &v.Name}}
 }
 
 func (v *listOnScalarSoa) Cap() int { return len(v.Name) }
@@ -186,8 +186,8 @@ type scalarOnListSoa struct {
 	Steps []float64
 }
 
-func (v *scalarOnListSoa) Columns() []pkg.Column {
-	return []pkg.Column{{Name: "Steps", Tags: `parquet:"steps"`, Ptr: &v.Steps}}
+func (v *scalarOnListSoa) Columns() []colio.Column {
+	return []colio.Column{{Name: "Steps", Tags: `parquet:"steps"`, Ptr: &v.Steps}}
 }
 
 func (v *scalarOnListSoa) Cap() int { return len(v.Steps) }
