@@ -3,7 +3,7 @@
 package clickhouse
 
 import (
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 	"iter"
 	"time"
 )
@@ -26,8 +26,8 @@ func (v *PersonSoa) Allocate(n int) {
 	v.CreatedAt = make([]time.Time, n)
 }
 
-func (v *PersonSoa) Columns() []pkg.Column {
-	return []pkg.Column{
+func (v *PersonSoa) Columns() []colio.Column {
+	return []colio.Column{
 		{Name: "Name", Tags: `ch:"name"`, Ptr: &v.Name},
 		{Name: "Age", Tags: `ch:"age"`, Ptr: &v.Age},
 		{Name: "NumChildren", Tags: `ch:"num_children"`, Ptr: &v.NumChildren},
@@ -110,8 +110,8 @@ func (v *EventSoa) Allocate(n int) {
 	v.Times = make([][]time.Time, n)
 }
 
-func (v *EventSoa) Columns() []pkg.Column {
-	return []pkg.Column{
+func (v *EventSoa) Columns() []colio.Column {
+	return []colio.Column{
 		{Name: "Name", Tags: `ch:"name"`, Ptr: &v.Name},
 		{Name: "Tags", Tags: `ch:"tags"`, Ptr: &v.Tags},
 		{Name: "Names", Tags: `ch:"names"`, Ptr: &v.Names},

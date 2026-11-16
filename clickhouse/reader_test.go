@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ClickHouse/ch-go/proto"
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 	"github.com/stretchr/testify/require"
 )
 
@@ -140,8 +140,8 @@ type unsupported struct {
 	Values []uint64
 }
 
-func (u *unsupported) Columns() []pkg.Column {
-	return []pkg.Column{{Name: "Values", Ptr: &u.Values}}
+func (u *unsupported) Columns() []colio.Column {
+	return []colio.Column{{Name: "Values", Ptr: &u.Values}}
 }
 
 func (u *unsupported) Cap() int { return len(u.Values) }

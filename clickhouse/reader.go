@@ -9,7 +9,7 @@ import (
 
 	"github.com/ClickHouse/ch-go"
 	"github.com/ClickHouse/ch-go/proto"
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 )
 
 type columnBinding struct {
@@ -24,12 +24,12 @@ func NewReader(client *ch.Client, query string) *Reader {
 type Reader struct {
 	client  *ch.Client
 	query   string
-	batch   pkg.Columnar
+	batch   colio.Columnar
 	columns []columnBinding
 	Err     error
 }
 
-func (r *Reader) Bind(dst pkg.Columnar) *Reader {
+func (r *Reader) Bind(dst colio.Columnar) *Reader {
 	if r.Err != nil {
 		return r
 	}
@@ -45,7 +45,7 @@ func (r *Reader) Bind(dst pkg.Columnar) *Reader {
 	return r
 }
 
-func (r *Reader) Read[T pkg.Columnar](ctx context.Context, process func(T, int) error) error {
+func (r *Reader) Read[T colio.Columnar](ctx context.Context, process func(T, int) error) error {
 	if r.Err != nil {
 		return r.Err
 	}

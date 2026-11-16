@@ -3,7 +3,7 @@
 package parquet
 
 import (
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 	"iter"
 	"time"
 )
@@ -26,8 +26,8 @@ func (v *PersonSoa) Allocate(n int) {
 	v.CreatedAt = make([]time.Time, n)
 }
 
-func (v *PersonSoa) Columns() []pkg.Column {
-	return []pkg.Column{
+func (v *PersonSoa) Columns() []colio.Column {
+	return []colio.Column{
 		{Name: "Name", Tags: `parquet:"name"`, Ptr: &v.Name},
 		{Name: "Age", Tags: `parquet:"age"`, Ptr: &v.Age},
 		{Name: "NumChildren", Tags: `parquet:"numChildren"`, Ptr: &v.NumChildren},
@@ -108,8 +108,8 @@ func (v *EventSoa) Allocate(n int) {
 	v.Times = make([][]time.Time, n)
 }
 
-func (v *EventSoa) Columns() []pkg.Column {
-	return []pkg.Column{
+func (v *EventSoa) Columns() []colio.Column {
+	return []colio.Column{
 		{Name: "Name", Tags: `parquet:"name"`, Ptr: &v.Name},
 		{Name: "Tags", Tags: `parquet:"tags,list"`, Ptr: &v.Tags},
 		{Name: "Steps", Tags: `parquet:"steps"`, Ptr: &v.Steps},

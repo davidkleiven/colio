@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 	parquetgo "github.com/parquet-go/parquet-go"
 )
 
@@ -47,12 +47,12 @@ func NewReader(r io.ReaderAt, size int64) *Reader {
 type Reader struct {
 	file    *parquetgo.File
 	schema  *parquetgo.Schema
-	batch   pkg.Columnar
+	batch   colio.Columnar
 	columns []columnBinding
 	Err     error
 }
 
-func (r *Reader) Bind(dst pkg.Columnar) *Reader {
+func (r *Reader) Bind(dst colio.Columnar) *Reader {
 	if r.Err != nil {
 		return r
 	}
@@ -90,7 +90,7 @@ func (r *Reader) Bind(dst pkg.Columnar) *Reader {
 	return r
 }
 
-func (r *Reader) Read[T pkg.Columnar](process func(T, int) error) error {
+func (r *Reader) Read[T colio.Columnar](process func(T, int) error) error {
 	if r.Err != nil {
 		return r.Err
 	}

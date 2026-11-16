@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/davidkleiven/colio/pkg"
+	"github.com/davidkleiven/colio/colio"
 )
 
 func main() {
@@ -31,8 +31,8 @@ func main() {
 	if *include != "" {
 		includes = strings.Split(*include, ",")
 	}
-	data := pkg.MakeTemplateData(source)
-	data = slices.DeleteFunc(data, func(d pkg.TemplateData) bool {
+	data := colio.MakeTemplateData(source)
+	data = slices.DeleteFunc(data, func(d colio.TemplateData) bool {
 		return slices.Contains(excludes, d.StructName) || (len(includes) > 0 && !slices.Contains(includes, d.StructName))
 	})
 
@@ -48,14 +48,14 @@ func main() {
 			buf.WriteString("package ")
 			buf.WriteString(pkgName)
 			buf.WriteString("\nimport (\n")
-			buf.WriteString("\"github.com/davidkleiven/colio/pkg\"\n")
+			buf.WriteString("\"github.com/davidkleiven/colio/colio\"\n")
 			buf.WriteString("\"time\"\n") // Should be removed by formatter if not necessary
 			buf.WriteString("\"iter\"\n")
 			buf.WriteString(")\n")
 			buf.WriteString("\n\n")
 		}
 
-		pkg.WriteSoa(&buf, item)
+		colio.WriteSoa(&buf, item)
 		buf.WriteString("\n\n")
 	}
 	formatted, err := format.Source(buf.Bytes())
