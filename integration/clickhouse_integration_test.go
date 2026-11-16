@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"io"
+	"slices"
 	"testing"
 	"time"
 
@@ -103,6 +104,17 @@ func TestReadClickhouseIntegrationTest(t *testing.T) {
 	err = clickhouse.NewReader(c, "SELECT * FROM persons").Bind(&result).Read[*clickhouse.PersonSoa](ctx, nil)
 	require.ErrorIs(t, err, io.EOF)
 	require.Equal(t, 5, result.Cap())
+
+	var personsAge28 []clickhouse.Person
+	err = clickhouse.NewReader(c, "SELECT * FROM persons WHERE age={age:Int64}").
+		Bind(&result).
+		WithParams([]proto.Parameter{{Key: "age", Value: "'28'"}}).
+		Read(ctx, func(v *clickhouse.PersonSoa, n int) error {
+			personsAge28 = append(personsAge28, slices.Collect(v.ToAos())...)
+			return nil
+		})
+	require.ErrorIs(t, err, io.EOF)
+	require.Len(t, personsAge28, 1)
 }
 
 func BenchmarkColVsHighlevelApi(b *testing.B) {

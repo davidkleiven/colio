@@ -24,9 +24,15 @@ func NewReader(client *ch.Client, query string) *Reader {
 type Reader struct {
 	client  *ch.Client
 	query   string
+	params  []proto.Parameter
 	batch   colio.Columnar
 	columns []columnBinding
 	Err     error
+}
+
+func (r *Reader) WithParams(p []proto.Parameter) *Reader {
+	r.params = p
+	return r
 }
 
 func (r *Reader) Bind(dst colio.Columnar) *Reader {
@@ -58,8 +64,9 @@ func (r *Reader) Read[T colio.Columnar](ctx context.Context, process func(T, int
 
 	var results proto.Results
 	err := r.client.Do(ctx, ch.Query{
-		Body:   r.query,
-		Result: results.Auto(),
+		Body:       r.query,
+		Result:     results.Auto(),
+		Parameters: r.params,
 		OnResult: func(_ context.Context, block proto.Block) error {
 			if block.Rows == 0 {
 				return nil
