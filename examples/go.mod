@@ -5,7 +5,7 @@ go 1.27.0
 tool github.com/davidkleiven/colio/cmd/soa
 
 require (
-	github.com/davidkleiven/colio v0.1.0
+	github.com/davidkleiven/colio v0.3.0
 	github.com/parquet-go/parquet-go v0.32.0
 )
 
