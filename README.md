@@ -76,6 +76,16 @@ a parquet file are read as columns.
 - Timestamps are returned in UTC from Parquet and in the local zone from ClickHouse,
   matching what the underlying drivers do.
 
+## Benchmarks
+<!-- BENCHMARKS:START -->
+| Benchmark | Iterations | ns/op | B/op | allocs/op | 
+| --- | ---: | ---: | ---: | ---: |
+BenchmarkColVsHighlevelApi/high-level-api-8 | 1 | 1418948767 | 1263505912 | 6003491 |
+BenchmarkColVsHighlevelApi/col-based-api-8 | 7 | 150725878 | 2784216 | 1474 |
+BenchmarkAosVsSoa/soa_read-8 | 15 | 74602760 | 92666712 | 2003232 |
+BenchmarkAosVsSoa/aos_read-8 | 1 | 1405769912 | 990258304 | 12002981 |
+<!-- BENCHMARKS:END -->
+
 ## Development
 
 ```sh
