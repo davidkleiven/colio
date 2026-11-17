@@ -59,7 +59,7 @@ func (v *PersonSoa) MaxCap() int {
 	)
 }
 
-func (v *PersonSoa) FillEmpty() {
+func (v *PersonSoa) FillEmpty() *PersonSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
 		v.Name = make([]string, n)
@@ -79,6 +79,7 @@ func (v *PersonSoa) FillEmpty() {
 	if len(v.CreatedAt) == 0 {
 		v.CreatedAt = make([]time.Time, n)
 	}
+	return v
 }
 
 func (v *PersonSoa) ToAos() iter.Seq[Person] {
@@ -179,7 +180,7 @@ func (v *EventSoa) MaxCap() int {
 	)
 }
 
-func (v *EventSoa) FillEmpty() {
+func (v *EventSoa) FillEmpty() *EventSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
 		v.Name = make([]string, n)
@@ -193,6 +194,7 @@ func (v *EventSoa) FillEmpty() {
 	if len(v.Times) == 0 {
 		v.Times = make([][]time.Time, n)
 	}
+	return v
 }
 
 func (v *EventSoa) ToAos() iter.Seq[Event] {
@@ -273,7 +275,7 @@ func (v *EmbeddedParentSoa) MaxCap() int {
 	)
 }
 
-func (v *EmbeddedParentSoa) FillEmpty() {
+func (v *EmbeddedParentSoa) FillEmpty() *EmbeddedParentSoa {
 	n := v.MaxCap()
 	if len(v.Id) == 0 {
 		v.Id = make([]string, n)
@@ -281,6 +283,7 @@ func (v *EmbeddedParentSoa) FillEmpty() {
 	if len(v.Name) == 0 {
 		v.Name = make([]string, n)
 	}
+	return v
 }
 
 func (v *EmbeddedParentSoa) ToAos() iter.Seq[EmbeddedParent] {
@@ -346,11 +349,12 @@ func (v *EmbeddedChildSoa) MaxCap() int {
 	)
 }
 
-func (v *EmbeddedChildSoa) FillEmpty() {
+func (v *EmbeddedChildSoa) FillEmpty() *EmbeddedChildSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
 		v.Name = make([]string, n)
 	}
+	return v
 }
 
 func (v *EmbeddedChildSoa) ToAos() iter.Seq[EmbeddedChild] {

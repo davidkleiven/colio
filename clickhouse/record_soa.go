@@ -59,7 +59,7 @@ func (v *PersonSoa) MaxCap() int {
 	)
 }
 
-func (v *PersonSoa) FillEmpty() {
+func (v *PersonSoa) FillEmpty() *PersonSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
 		v.Name = make([]string, n)
@@ -79,6 +79,7 @@ func (v *PersonSoa) FillEmpty() {
 	if len(v.CreatedAt) == 0 {
 		v.CreatedAt = make([]time.Time, n)
 	}
+	return v
 }
 
 func (v *PersonSoa) ToAos() iter.Seq[Person] {
@@ -184,7 +185,7 @@ func (v *EventSoa) MaxCap() int {
 	)
 }
 
-func (v *EventSoa) FillEmpty() {
+func (v *EventSoa) FillEmpty() *EventSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
 		v.Name = make([]string, n)
@@ -201,6 +202,7 @@ func (v *EventSoa) FillEmpty() {
 	if len(v.Times) == 0 {
 		v.Times = make([][]time.Time, n)
 	}
+	return v
 }
 
 func (v *EventSoa) ToAos() iter.Seq[Event] {

@@ -34,13 +34,14 @@ func (v *{{ .StructName }}Soa) MaxCap() int {
 	)
 }
 
-func (v *{{ .StructName }}Soa) FillEmpty(){
+func (v *{{ .StructName }}Soa) FillEmpty() *{{ .StructName }}Soa {
 	n := v.MaxCap()
 	{{- range .Fields }}
 	if len(v.{{ .Name }}) == 0 {
 		v.{{ .Name }} = make([]{{ .Type }}, n)
 	}
 	{{- end }}
+	return v
 }
 
 func (v *{{ .StructName }}Soa) ToAos() iter.Seq[{{ .StructName }}] {
