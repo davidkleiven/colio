@@ -48,6 +48,39 @@ func (v *PersonSoa) Cap() int {
 	)
 }
 
+func (v *PersonSoa) MaxCap() int {
+	return max(
+		len(v.Name),
+		len(v.Age),
+		len(v.NumChildren),
+		len(v.Height),
+		len(v.Weight),
+		len(v.CreatedAt),
+	)
+}
+
+func (v *PersonSoa) FillEmpty() {
+	n := v.MaxCap()
+	if len(v.Name) == 0 {
+		v.Name = make([]string, n)
+	}
+	if len(v.Age) == 0 {
+		v.Age = make([]int64, n)
+	}
+	if len(v.NumChildren) == 0 {
+		v.NumChildren = make([]int32, n)
+	}
+	if len(v.Height) == 0 {
+		v.Height = make([]float64, n)
+	}
+	if len(v.Weight) == 0 {
+		v.Weight = make([]float32, n)
+	}
+	if len(v.CreatedAt) == 0 {
+		v.CreatedAt = make([]time.Time, n)
+	}
+}
+
 func (v *PersonSoa) ToAos() iter.Seq[Person] {
 	return func(yield func(Person) bool) {
 		for i := range v.Cap() {
@@ -139,6 +172,35 @@ func (v *EventSoa) Cap() int {
 		len(v.Steps),
 		len(v.Times),
 	)
+}
+
+func (v *EventSoa) MaxCap() int {
+	return max(
+		len(v.Name),
+		len(v.Tags),
+		len(v.Names),
+		len(v.Steps),
+		len(v.Times),
+	)
+}
+
+func (v *EventSoa) FillEmpty() {
+	n := v.MaxCap()
+	if len(v.Name) == 0 {
+		v.Name = make([]string, n)
+	}
+	if len(v.Tags) == 0 {
+		v.Tags = make([][]int, n)
+	}
+	if len(v.Names) == 0 {
+		v.Names = make([][]string, n)
+	}
+	if len(v.Steps) == 0 {
+		v.Steps = make([][]float64, n)
+	}
+	if len(v.Times) == 0 {
+		v.Times = make([][]time.Time, n)
+	}
 }
 
 func (v *EventSoa) ToAos() iter.Seq[Event] {
