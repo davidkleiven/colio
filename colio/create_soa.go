@@ -16,7 +16,7 @@ import (
 var assets embed.FS
 
 func MustLoadSoaTempl() *template.Template {
-	f := Must(assets.Open("assets/soa.tmpl"))
+	f := Must(assets.Open("assets/soa.go.tmpl"))
 	defer f.Close()
 	content := Must(io.ReadAll(f))
 	return Must(template.New("soa").Parse(string(content)))
