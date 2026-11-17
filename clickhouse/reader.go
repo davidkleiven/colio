@@ -99,7 +99,7 @@ func (r *Reader) decode(results proto.Results) error {
 		})
 		if i < 0 {
 			if r.allowMissing {
-				return nil
+				continue
 			}
 			return fmt.Errorf("clickhouse column %q not found", binding.name)
 		}
