@@ -22,16 +22,22 @@ func NewReader(client *ch.Client, query string) *Reader {
 }
 
 type Reader struct {
-	client  *ch.Client
-	query   string
-	params  []proto.Parameter
-	batch   colio.Columnar
-	columns []columnBinding
-	Err     error
+	client       *ch.Client
+	query        string
+	params       []proto.Parameter
+	batch        colio.Columnar
+	columns      []columnBinding
+	allowMissing bool
+	Err          error
 }
 
 func (r *Reader) WithParams(p []proto.Parameter) *Reader {
 	r.params = p
+	return r
+}
+
+func (r *Reader) AllowMissing() *Reader {
+	r.allowMissing = true
 	return r
 }
 
@@ -92,8 +98,10 @@ func (r *Reader) decode(results proto.Results) error {
 			return col.Name == binding.name
 		})
 		if i < 0 {
-			// Column not found in the result, use zero value
-			return nil
+			if r.allowMissing {
+				return nil
+			}
+			return fmt.Errorf("clickhouse column %q not found", binding.name)
 		}
 		if err := binding.store(results[i].Data); err != nil {
 			return fmt.Errorf("clickhouse column %q: %w", binding.name, err)
