@@ -9,6 +9,7 @@ import (
 	"go/printer"
 	"go/token"
 	"io"
+	"strings"
 	"text/template"
 )
 
@@ -99,6 +100,10 @@ func flattenFields(fset *token.FileSet, structs map[string]*ast.StructType, st *
 		var tags string
 		if field.Tag != nil {
 			tags = field.Tag.Value
+		}
+
+		if strings.Contains(tags, "soa:\"skip\"") {
+			continue
 		}
 
 		if len(field.Names) == 0 {
