@@ -1,6 +1,6 @@
 type {{ .StructName }}Soa struct {
 {{- range .Fields }}
-	{{ .Name }} []{{ .Type }} {{ .Tags }}
+	{{ .Name }} []{{ .Type }} {{ if .Tags }}{{ .Tags }}{{ end }}
 {{- end }}
 }
 
@@ -13,7 +13,7 @@ func (v *{{ .StructName }}Soa) Allocate(n int) {
 func (v *{{ .StructName }}Soa) Columns() []colio.Column {
 	return []colio.Column{
 	{{- range .Fields }}
-		{Name: "{{ .Name }}", Tags: {{ .Tags }}, Ptr: &v.{{ .Name }}},
+		{Name: "{{ .Name }}", Tags: {{ if .Tags }}{{ .Tags }}{{ else }}""{{ end }}, Ptr: &v.{{ .Name }}},
 	{{- end }}
 	}
 }

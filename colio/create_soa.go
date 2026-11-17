@@ -44,60 +44,93 @@ func MakeTemplateData(filename string) []TemplateData {
 
 	file := Must(parser.ParseFile(fset, filename, nil, parser.ParseComments))
 
-	var result []TemplateData
-
+	structs := map[string]*ast.StructType{}
 	for _, decl := range file.Decls {
 		gen, ok := decl.(*ast.GenDecl)
 		if !ok || gen.Tok != token.TYPE {
 			continue
 		}
-
 		for _, spec := range gen.Specs {
 			ts, ok := spec.(*ast.TypeSpec)
 			if !ok {
 				continue
 			}
+			if st, ok := ts.Type.(*ast.StructType); ok {
+				structs[ts.Name.Name] = st
+			}
+		}
+	}
 
+	var result []TemplateData
+	for _, decl := range file.Decls {
+		gen, ok := decl.(*ast.GenDecl)
+		if !ok || gen.Tok != token.TYPE {
+			continue
+		}
+		for _, spec := range gen.Specs {
+			ts, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
 			st, ok := ts.Type.(*ast.StructType)
 			if !ok {
 				continue
 			}
-
 			data := TemplateData{
 				PackageName: file.Name.Name,
 				StructName:  ts.Name.Name,
+				Fields:      flattenFields(fset, structs, st),
 			}
-
-			for _, field := range st.Fields.List {
-				if len(field.Names) == 0 {
-					continue
-				}
-
-				var typeBuf bytes.Buffer
-				err := printer.Fprint(&typeBuf, fset, field.Type)
-				Assert(err == nil, fmt.Sprintf("print field type: %v", err))
-
-				tags := ""
-				if field.Tag != nil {
-					tags = field.Tag.Value
-				}
-
-				for _, name := range field.Names {
-					if !name.IsExported() {
-						continue
-					}
-
-					data.Fields = append(data.Fields, Field{
-						Name: name.Name,
-						Type: typeBuf.String(),
-						Tags: tags,
-					})
-				}
-			}
-
 			result = append(result, data)
 		}
 	}
 
 	return result
+}
+
+func flattenFields(fset *token.FileSet, structs map[string]*ast.StructType, st *ast.StructType) []Field {
+	var fields []Field
+	for _, field := range st.Fields.List {
+		var typeBuf bytes.Buffer
+		err := printer.Fprint(&typeBuf, fset, field.Type)
+		Assert(err == nil, fmt.Sprintf("print field type: %v", err))
+		typeStr := typeBuf.String()
+
+		var tags string
+		if field.Tag != nil {
+			tags = field.Tag.Value
+		}
+
+		if len(field.Names) == 0 {
+			name := embeddedTypeName(field.Type)
+			if est, ok := structs[name]; ok {
+				fields = append(fields, flattenFields(fset, structs, est)...)
+			}
+			continue
+		}
+
+		for _, name := range field.Names {
+			if !name.IsExported() {
+				continue
+			}
+			fields = append(fields, Field{
+				Name: name.Name,
+				Type: typeStr,
+				Tags: tags,
+			})
+		}
+	}
+	return fields
+}
+
+func embeddedTypeName(expr ast.Expr) string {
+	switch t := expr.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.StarExpr:
+		return embeddedTypeName(t.X)
+	case *ast.SelectorExpr:
+		return t.Sel.Name
+	}
+	return ""
 }

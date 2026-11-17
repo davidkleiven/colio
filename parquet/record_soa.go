@@ -183,3 +183,116 @@ func (v *EventSoa) At(i int) Event {
 		Times: v.Times[i],
 	}
 }
+
+type EmbeddedParentSoa struct {
+	Id   []string
+	Name []string
+}
+
+func (v *EmbeddedParentSoa) Allocate(n int) {
+	v.Id = make([]string, n)
+	v.Name = make([]string, n)
+}
+
+func (v *EmbeddedParentSoa) Columns() []colio.Column {
+	return []colio.Column{
+		{Name: "Id", Tags: "", Ptr: &v.Id},
+		{Name: "Name", Tags: "", Ptr: &v.Name},
+	}
+}
+
+func (v *EmbeddedParentSoa) Cap() int {
+	return min(
+		len(v.Id),
+		len(v.Name),
+	)
+}
+
+func (v *EmbeddedParentSoa) ToAos() iter.Seq[EmbeddedParent] {
+	return func(yield func(EmbeddedParent) bool) {
+		for i := range v.Cap() {
+			item := EmbeddedParent{
+				Id:   v.Id[i],
+				Name: v.Name[i],
+			}
+			if !yield(item) {
+				return
+			}
+		}
+	}
+}
+
+func (v *EmbeddedParentSoa) Delete(i int) {
+	v.Id[i] = v.Id[len(v.Id)-1]
+	v.Id = v.Id[:len(v.Id)-1]
+	v.Name[i] = v.Name[len(v.Name)-1]
+	v.Name = v.Name[:len(v.Name)-1]
+}
+
+func (v *EmbeddedParentSoa) FromAos(aos []EmbeddedParent) *EmbeddedParentSoa {
+	v.Allocate(len(aos))
+	for i, item := range aos {
+		v.Id[i] = item.Id
+		v.Name[i] = item.Name
+	}
+	return v
+}
+
+func (v *EmbeddedParentSoa) At(i int) EmbeddedParent {
+	return EmbeddedParent{
+		Id:   v.Id[i],
+		Name: v.Name[i],
+	}
+}
+
+type EmbeddedChildSoa struct {
+	Name []string
+}
+
+func (v *EmbeddedChildSoa) Allocate(n int) {
+	v.Name = make([]string, n)
+}
+
+func (v *EmbeddedChildSoa) Columns() []colio.Column {
+	return []colio.Column{
+		{Name: "Name", Tags: "", Ptr: &v.Name},
+	}
+}
+
+func (v *EmbeddedChildSoa) Cap() int {
+	return min(
+		len(v.Name),
+	)
+}
+
+func (v *EmbeddedChildSoa) ToAos() iter.Seq[EmbeddedChild] {
+	return func(yield func(EmbeddedChild) bool) {
+		for i := range v.Cap() {
+			item := EmbeddedChild{
+				Name: v.Name[i],
+			}
+			if !yield(item) {
+				return
+			}
+		}
+	}
+}
+
+func (v *EmbeddedChildSoa) Delete(i int) {
+	v.Name[i] = v.Name[len(v.Name)-1]
+	v.Name = v.Name[:len(v.Name)-1]
+}
+
+func (v *EmbeddedChildSoa) FromAos(aos []EmbeddedChild) *EmbeddedChildSoa {
+	v.Allocate(len(aos))
+	for i, item := range aos {
+		v.Name[i] = item.Name
+	}
+	return v
+}
+
+func (v *EmbeddedChildSoa) At(i int) EmbeddedChild {
+	return EmbeddedChild{
+		Name: v.Name[i],
+	}
+}

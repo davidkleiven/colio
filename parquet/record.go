@@ -19,3 +19,12 @@ type Event struct {
 	Steps []float64   `parquet:"steps"`
 	Times []time.Time `parquet:"times,list"`
 }
+
+type EmbeddedParent struct {
+	Id string
+	EmbeddedChild
+}
+
+type EmbeddedChild struct {
+	Name string
+}
