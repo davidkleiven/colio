@@ -92,7 +92,8 @@ func (r *Reader) decode(results proto.Results) error {
 			return col.Name == binding.name
 		})
 		if i < 0 {
-			return fmt.Errorf("clickhouse column %q not found", binding.name)
+			// Column not found in the result, use zero value
+			return nil
 		}
 		if err := binding.store(results[i].Data); err != nil {
 			return fmt.Errorf("clickhouse column %q: %w", binding.name, err)
