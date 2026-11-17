@@ -26,6 +26,23 @@ func (v *{{ .StructName }}Soa) Cap() int {
 	)
 }
 
+func (v *{{ .StructName }}Soa) MaxCap() int {
+	return max(
+		{{- range .Fields }}
+			len(v.{{ .Name }}),
+		{{- end }}
+	)
+}
+
+func (v *{{ .StructName }}Soa) FillEmpty(){
+	n := v.MaxCap()
+	{{- range .Fields }}
+	if len(v.{{ .Name }}) == 0 {
+		v.{{ .Name }} = make([]{{ .Type }}, n)
+	}
+	{{- end }}
+}
+
 func (v *{{ .StructName }}Soa) ToAos() iter.Seq[{{ .StructName }}] {
 	return func(yield func({{ .StructName }}) bool) {
 		for i := range v.Cap() {
