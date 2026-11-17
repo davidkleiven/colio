@@ -276,4 +276,7 @@ func TestDelete(t *testing.T) {
 	require.Equal(t, persons[0].Name, "Susan")
 }
 
-var _ colio.Aoser[Person] = (*PersonSoa)(nil)
+var (
+	_ colio.Aoser[Person] = (*PersonSoa)(nil)
+	_                     = EmbeddedParentSoa{}.Name // Verify parent gets field of child
+)
