@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ClickHouse/ch-go"
+	"github.com/ClickHouse/ch-go/chpool"
 	"github.com/ClickHouse/ch-go/proto"
 	"github.com/davidkleiven/colio/colio"
 )
@@ -17,12 +18,12 @@ type columnBinding struct {
 	store func(proto.ColResult) error
 }
 
-func NewReader(client *ch.Client, query string) *Reader {
-	return &Reader{client: client, query: query}
+func NewReader(pool *chpool.Pool, query string) *Reader {
+	return &Reader{pool: pool, query: query}
 }
 
 type Reader struct {
-	client       *ch.Client
+	pool         *chpool.Pool
 	query        string
 	params       []proto.Parameter
 	batch        colio.Columnar
@@ -69,7 +70,7 @@ func (r *Reader) Read[T colio.Columnar](ctx context.Context, process func(T, int
 	}
 
 	var results proto.Results
-	err := r.client.Do(ctx, ch.Query{
+	err := r.pool.Do(ctx, ch.Query{
 		Body:       r.query,
 		Result:     results.Auto(),
 		Parameters: r.params,
