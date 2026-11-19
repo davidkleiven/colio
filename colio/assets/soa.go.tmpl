@@ -34,6 +34,13 @@ func (v *{{ .StructName }}Soa) MaxCap() int {
 	)
 }
 
+func(v *{{ .StructName }}Soa) Clear() *{{ .StructName }}Soa {
+	{{- range .Fields }}
+		v.{{ .Name }} = v.{{ .Name }}[:0]
+	{{- end }}
+	return v
+}
+
 func (v *{{ .StructName }}Soa) FillEmpty() *{{ .StructName }}Soa {
 	n := v.MaxCap()
 	{{- range .Fields }}
