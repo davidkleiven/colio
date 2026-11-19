@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ClickHouse/ch-go"
+	"github.com/ClickHouse/ch-go/chpool"
 	"github.com/ClickHouse/ch-go/proto"
 	hch "github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/davidkleiven/colio/clickhouse"
@@ -55,9 +56,10 @@ ORDER BY created_at;
 func TestReadClickhouseIntegrationTest(t *testing.T) {
 	opts := setupChContainer(t)
 	ctx := context.Background()
-	c, err := ch.Dial(ctx, opts)
+	pool, err := chpool.New(ctx, chpool.Options{ClientOptions: opts})
 	require.NoError(t, err)
-	err = c.Do(ctx, ch.Query{Body: createPersonsSql})
+	defer pool.Close()
+	err = pool.Do(ctx, ch.Query{Body: createPersonsSql})
 
 	rows := []clickhouse.Person{
 		{Name: "Alice", Age: 34, NumChildren: 2, Height: 1.68, Weight: 62.5, CreatedAt: time.Now().UTC()},
@@ -86,7 +88,7 @@ func TestReadClickhouseIntegrationTest(t *testing.T) {
 	}
 	require.NoError(t, err)
 
-	err = c.Do(ctx, ch.Query{
+	err = pool.Do(ctx, ch.Query{
 		Body: "INSERT INTO persons (name, age, num_children, height, weight, created_at) VALUES",
 		Input: proto.Input{
 			{Name: "name", Data: &names},
@@ -101,12 +103,12 @@ func TestReadClickhouseIntegrationTest(t *testing.T) {
 	require.NoError(t, err)
 
 	var result clickhouse.PersonSoa
-	err = clickhouse.NewReader(c, "SELECT * FROM persons").Bind(&result).Read[*clickhouse.PersonSoa](ctx, nil)
+	err = clickhouse.NewReader(pool, "SELECT * FROM persons").Bind(&result).Read[*clickhouse.PersonSoa](ctx, nil)
 	require.ErrorIs(t, err, io.EOF)
 	require.Equal(t, 5, result.Cap())
 
 	var personsAge28 []clickhouse.Person
-	err = clickhouse.NewReader(c, "SELECT * FROM persons WHERE age={age:Int64}").
+	err = clickhouse.NewReader(pool, "SELECT * FROM persons WHERE age={age:Int64}").
 		Bind(&result).
 		WithParams([]proto.Parameter{{Key: "age", Value: "'28'"}}).
 		Read(ctx, func(v *clickhouse.PersonSoa, n int) error {
@@ -120,9 +122,10 @@ func TestReadClickhouseIntegrationTest(t *testing.T) {
 func BenchmarkColVsHighlevelApi(b *testing.B) {
 	opts := setupChContainer(b)
 	ctx := context.Background()
-	client, err := ch.Dial(ctx, opts)
+	pool, err := chpool.New(ctx, chpool.Options{ClientOptions: opts})
 	require.NoError(b, err)
-	err = client.Do(ctx, ch.Query{Body: createPersonsSql})
+	defer pool.Close()
+	err = pool.Do(ctx, ch.Query{Body: createPersonsSql})
 	require.NoError(b, err)
 
 	num := 2_000_000
@@ -166,7 +169,7 @@ func BenchmarkColVsHighlevelApi(b *testing.B) {
 	b.Run("col-based-api", func(b *testing.B) {
 		for range b.N {
 			var result clickhouse.PersonSoa
-			err := clickhouse.NewReader(client, "SELECT * FROM testdb.persons").Bind(&result).Read[*clickhouse.PersonSoa](ctx, nil)
+			err := clickhouse.NewReader(pool, "SELECT * FROM testdb.persons").Bind(&result).Read[*clickhouse.PersonSoa](ctx, nil)
 			require.ErrorIs(b, err, io.EOF)
 		}
 	})
