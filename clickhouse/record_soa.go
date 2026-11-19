@@ -59,6 +59,16 @@ func (v *PersonSoa) MaxCap() int {
 	)
 }
 
+func (v *PersonSoa) Clear() *PersonSoa {
+	v.Name = v.Name[:0]
+	v.Age = v.Age[:0]
+	v.NumChildren = v.NumChildren[:0]
+	v.Height = v.Height[:0]
+	v.Weight = v.Weight[:0]
+	v.CreatedAt = v.CreatedAt[:0]
+	return v
+}
+
 func (v *PersonSoa) FillEmpty() *PersonSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
@@ -183,6 +193,15 @@ func (v *EventSoa) MaxCap() int {
 		len(v.Steps),
 		len(v.Times),
 	)
+}
+
+func (v *EventSoa) Clear() *EventSoa {
+	v.Name = v.Name[:0]
+	v.Tags = v.Tags[:0]
+	v.Names = v.Names[:0]
+	v.Steps = v.Steps[:0]
+	v.Times = v.Times[:0]
+	return v
 }
 
 func (v *EventSoa) FillEmpty() *EventSoa {

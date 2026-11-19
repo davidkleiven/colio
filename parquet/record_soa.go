@@ -59,6 +59,16 @@ func (v *PersonSoa) MaxCap() int {
 	)
 }
 
+func (v *PersonSoa) Clear() *PersonSoa {
+	v.Name = v.Name[:0]
+	v.Age = v.Age[:0]
+	v.NumChildren = v.NumChildren[:0]
+	v.Height = v.Height[:0]
+	v.Weight = v.Weight[:0]
+	v.CreatedAt = v.CreatedAt[:0]
+	return v
+}
+
 func (v *PersonSoa) FillEmpty() *PersonSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
@@ -180,6 +190,14 @@ func (v *EventSoa) MaxCap() int {
 	)
 }
 
+func (v *EventSoa) Clear() *EventSoa {
+	v.Name = v.Name[:0]
+	v.Tags = v.Tags[:0]
+	v.Steps = v.Steps[:0]
+	v.Times = v.Times[:0]
+	return v
+}
+
 func (v *EventSoa) FillEmpty() *EventSoa {
 	n := v.MaxCap()
 	if len(v.Name) == 0 {
@@ -275,6 +293,12 @@ func (v *EmbeddedParentSoa) MaxCap() int {
 	)
 }
 
+func (v *EmbeddedParentSoa) Clear() *EmbeddedParentSoa {
+	v.Id = v.Id[:0]
+	v.Name = v.Name[:0]
+	return v
+}
+
 func (v *EmbeddedParentSoa) FillEmpty() *EmbeddedParentSoa {
 	n := v.MaxCap()
 	if len(v.Id) == 0 {
@@ -347,6 +371,11 @@ func (v *EmbeddedChildSoa) MaxCap() int {
 	return max(
 		len(v.Name),
 	)
+}
+
+func (v *EmbeddedChildSoa) Clear() *EmbeddedChildSoa {
+	v.Name = v.Name[:0]
+	return v
 }
 
 func (v *EmbeddedChildSoa) FillEmpty() *EmbeddedChildSoa {
